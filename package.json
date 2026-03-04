@@ -6,6 +6,11 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edjo/honova.git"
+  },
+  "homepage": "https://github.com/edjo/honova",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
