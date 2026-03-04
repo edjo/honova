@@ -1,5 +1,5 @@
 {
-  "name": "honova",
+  "name": "@honova/core",
   "version": "0.0.1",
   "description": "Nest-like framework for Cloudflare Workers powered by Hono with modules, decorators, DI, and typed database middleware.",
   "license": "MIT",
