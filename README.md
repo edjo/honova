@@ -79,25 +79,25 @@ Honova provides a module system, decorators, dependency injection, route metadat
 ## Installation
 
 ```bash
-npm i @honova/core
+npm i honovajs
 ```
 
 ```bash
-pnpm add @honova/core
+pnpm add honovajs
 ```
 
 ```bash
-yarn add @honova/core
+yarn add honovajs
 ```
 
 ```bash
-bun add @honova/core
+bun add honovajs
 ```
 
 ## Quick Start
 
 ```ts
-import { Controller, Get, Injectable, Module, createApp } from "@honova/core";
+import { Controller, Get, Injectable, Module, createApp } from "honovajs";
 
 @Injectable()
 class HealthService {
@@ -195,7 +195,7 @@ const app = createApp({
 ### Decorator Middleware
 
 ```ts
-import { Controller, Get, UseMiddleware } from "@honova/core";
+import { Controller, Get, UseMiddleware } from "honovajs";
 
 const requireHeader = async (c: any, next: any) => {
   if (!c.req.header("x-trace")) {
@@ -238,7 +238,7 @@ const app = createApp({
 ### Bearer Token
 
 ```ts
-import { Controller, Get, UseBearerAuth } from "@honova/core";
+import { Controller, Get, UseBearerAuth } from "honovajs";
 
 @UseBearerAuth({
   verify: async (token) => (token === "valid-token" ? { id: "user_1" } : null),
@@ -255,7 +255,7 @@ class MeController {
 ### API Key
 
 ```ts
-import { Controller, Get, UseApiKey } from "@honova/core";
+import { Controller, Get, UseApiKey } from "honovajs";
 
 @UseApiKey({
   header: "x-api-key",
@@ -275,7 +275,7 @@ class InternalController {
 ### Define Connections
 
 ```ts
-import { createDbManagerMiddleware, defineDatabase } from "@honova/core";
+import { createDbManagerMiddleware, defineDatabase } from "honovajs";
 
 type Env = { DATABASE_URL: string; ANALYTICS_URL: string };
 
