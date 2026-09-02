@@ -1,5 +1,7 @@
 import type { Context } from "hono";
 
+import { createLazyClientProxy } from "./lazy-proxy";
+
 export type DbLifecycleStrategy = "request" | "manual";
 
 export interface DbLifecycleOptions {
@@ -42,6 +44,8 @@ export interface DatabaseConnectionDefinition<
   ) => string | Promise<string>;
   required?: boolean;
   eager?: boolean;
+  /** Default connection only: connect on first access instead of per request. */
+  lazy?: boolean;
 }
 
 export type DatabaseConnectionDefinitions<
@@ -131,6 +135,7 @@ interface ResolvedConnectionDefinition<
   connectionName: string;
   required: boolean;
   eager: boolean;
+  lazy: boolean;
   adapter: DatabaseAdapter<Env, Client, Options>;
   options: Options;
   url?: string;
@@ -173,6 +178,7 @@ export class DatabaseManager<
         connectionName: connection.connectionName,
         required: connection.required !== false,
         eager: connection.eager === true,
+        lazy: connection.lazy === true,
         adapter: connection.adapter,
         options: connection.options,
         url: connection.url,
@@ -204,7 +210,16 @@ export class DatabaseManager<
   }
 
   async initialize(): Promise<InferDbDefaultAndConnections<TDatabase>> {
-    const connectionNamesToInitialize = new Set<string>([this.defaultConnectionName]);
+    const connectionNamesToInitialize = new Set<string>();
+
+    // The default connection is eager unless it opts out. Opting out matters on
+    // serverless runtimes with pooled origins (Hyperdrive, RDS Proxy): a health
+    // check, a 404 or a rejected request would otherwise take a connection from
+    // a small budget on every single request, just to hand it straight back.
+    const defaultDefinition = this.definitions.get(this.defaultConnectionName);
+    if (defaultDefinition?.lazy !== true) {
+      connectionNamesToInitialize.add(this.defaultConnectionName);
+    }
 
     const eagerConnections = [...this.definitions.values()]
       .filter((definition) => definition.eager)
@@ -271,9 +286,25 @@ export class DatabaseManager<
     return this.dbConnections as InferDbConnectionsFromDatabase<TDatabase>;
   }
 
+  /**
+   * A stand-in for a `lazy` default connection.
+   *
+   * It carries the same inferred type as the real client and resolves the
+   * connection the first time a method is called, so `c.db` stays typed and
+   * usable without a request that never queries paying for a connection.
+   */
+  private lazyDefaultClient(): unknown {
+    const definition = this.definitions.get(this.defaultConnectionName);
+    if (definition?.lazy !== true) {
+      return undefined;
+    }
+
+    return createLazyClientProxy(async () => this.connection(this.defaultConnectionName));
+  }
+
   get db(): InferDbDefaultAndConnections<TDatabase> {
     const map = this.connections as Record<string, unknown>;
-    const defaultClient = map[this.defaultConnectionName];
+    const defaultClient = map[this.defaultConnectionName] ?? this.lazyDefaultClient();
 
     if (!defaultClient || typeof defaultClient !== "object") {
       return defaultClient as InferDbDefaultAndConnections<TDatabase>;

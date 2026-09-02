@@ -10,9 +10,11 @@ import {
 function applyControllerMiddlewares(target: Function, middlewares: MiddlewareHandler[]): void {
   const existing = getControllerMetadata(target);
 
+  // Class decorators evaluate bottom-up, so prepending keeps the
+  // top-to-bottom declaration order at runtime.
   setControllerMetadata(target, {
     prefix: existing?.prefix ?? "",
-    middlewares: [...(existing?.middlewares ?? []), ...middlewares],
+    middlewares: [...middlewares, ...(existing?.middlewares ?? [])],
   });
 }
 

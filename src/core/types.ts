@@ -9,7 +9,8 @@ export type HttpMethod =
   | "PATCH"
   | "DELETE"
   | "OPTIONS"
-  | "HEAD";
+  | "HEAD"
+  | "QUERY";
 
 export interface RouteDefinition {
   method: HttpMethod;
@@ -23,9 +24,45 @@ export interface ControllerMetadata {
   middlewares: MiddlewareHandler[];
 }
 
+export type Token<T = unknown> = Constructor<T> | string | symbol;
+
+export type InjectionScope = "singleton" | "request" | "transient";
+
+export interface ValueProvider {
+  provide: Token;
+  useValue: unknown;
+}
+
+export interface FactoryProvider {
+  provide: Token;
+  useFactory: (...deps: never[]) => unknown;
+  inject?: Token[];
+  scope?: InjectionScope;
+}
+
+export interface ClassProvider {
+  provide: Token;
+  useClass: Constructor;
+  /** Overrides the class's own @Injectable scope for this token. */
+  scope?: InjectionScope;
+}
+
+export interface ExistingProvider {
+  provide: Token;
+  useExisting: Token;
+}
+
+export type CustomProvider =
+  | ValueProvider
+  | FactoryProvider
+  | ClassProvider
+  | ExistingProvider;
+
+export type ProviderDefinition = Constructor | CustomProvider;
+
 export interface ModuleMetadata {
   controllers?: Constructor[];
-  providers?: Constructor[];
+  providers?: ProviderDefinition[];
   imports?: Constructor[];
 }
 
@@ -35,7 +72,8 @@ export interface InjectableMetadata {
 }
 
 export interface OnModuleInit<TContext = unknown> {
-  onModuleInit(context?: TContext): void;
+  /** May be async; async inits are awaited by the request pipeline. */
+  onModuleInit(context?: TContext): void | Promise<void>;
 }
 
 export type HandlerFunction<Env extends Record<string, unknown>> = (

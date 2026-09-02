@@ -64,3 +64,6 @@ export const Patch = createMethodDecorator("PATCH");
 export const Delete = createMethodDecorator("DELETE");
 export const Options = createMethodDecorator("OPTIONS");
 export const Head = createMethodDecorator("HEAD");
+// RFC 10008 safe method with a body (hono >= 4.13). Named HttpQuery to leave
+// "Query" free for the query-string concept.
+export const HttpQuery = createMethodDecorator("QUERY");
