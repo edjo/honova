@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono";
 
-import { UseMiddleware } from "../../core/decorators/middleware";
+import { UseMiddleware } from "../../core/decorators/middleware.js";
 
 export interface BearerAuthPrincipal {
   id?: string;

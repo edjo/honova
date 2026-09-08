@@ -1,5 +1,5 @@
-import type { ModuleMetadata } from "../types";
-import { setModuleMetadata } from "../metadata";
+import type { ModuleMetadata } from "../types.js";
+import { setModuleMetadata } from "../metadata.js";
 
 export function Module(metadata: ModuleMetadata): ClassDecorator {
   return (target) => {

@@ -4,7 +4,7 @@ import type {
   ModuleMetadata,
   RouteDefinition,
   Constructor,
-} from "./types";
+} from "./types.js";
 
 const moduleMetadata = new WeakMap<Function, ModuleMetadata>();
 const controllerMetadata = new WeakMap<Function, ControllerMetadata>();
@@ -42,10 +42,24 @@ export function getRoutesMetadata(target: Function): RouteDefinition[] {
   return routesMetadata.get(target) ?? [];
 }
 
+// @UseMiddleware evaluated before the HTTP decorator (decorators run
+// bottom-up) used to be silently dropped; stash it until the route exists.
+const pendingMethodMiddlewares = new WeakMap<Function, RouteDefinition["middlewares"]>();
+
 export function setMethodRouteMetadata(
   method: Function,
   route: RouteDefinition,
 ): void {
+  const pending = pendingMethodMiddlewares.get(method);
+  if (pending && pending.length > 0) {
+    pendingMethodMiddlewares.delete(method);
+    methodRouteMetadata.set(method, {
+      ...route,
+      middlewares: [...pending, ...route.middlewares],
+    });
+    return;
+  }
+
   methodRouteMetadata.set(method, route);
 }
 
@@ -82,6 +96,8 @@ export function prependMethodRouteMiddlewares(
 ): void {
   const existing = methodRouteMetadata.get(method);
   if (!existing) {
+    const pending = pendingMethodMiddlewares.get(method) ?? [];
+    pendingMethodMiddlewares.set(method, [...middlewares, ...pending]);
     return;
   }
 

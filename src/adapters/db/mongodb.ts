@@ -1,4 +1,4 @@
-import type { DatabaseAdapter } from "../../database/manager";
+import type { DatabaseAdapter } from "../../database/manager.js";
 
 export interface MongoDbAdapterOptions<TClient, TConnectOptions> {
   connect: (url: string, options: TConnectOptions) => Promise<TClient> | TClient;

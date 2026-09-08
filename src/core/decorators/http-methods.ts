@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 
-import type { HttpMethod } from "../types";
-import { setMethodRouteMetadata } from "../metadata";
+import type { HttpMethod } from "../types.js";
+import { setMethodRouteMetadata } from "../metadata.js";
 
 function isStandardMethodDecoratorArgs(args: unknown[]): boolean {
   if (args.length !== 2) {
@@ -64,3 +64,6 @@ export const Patch = createMethodDecorator("PATCH");
 export const Delete = createMethodDecorator("DELETE");
 export const Options = createMethodDecorator("OPTIONS");
 export const Head = createMethodDecorator("HEAD");
+// RFC 10008 safe method with a body (hono >= 4.13). Named HttpQuery to leave
+// "Query" free for the query-string concept.
+export const HttpQuery = createMethodDecorator("QUERY");

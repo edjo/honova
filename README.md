@@ -6,9 +6,10 @@ Honova provides a module system, decorators, dependency injection, route metadat
 
 ## Status
 
-- Package version: `0.0.1`
+- Package version: `0.1.0`
 - Runtime target: Cloudflare Workers (also works anywhere Hono runs)
 - Module format: ESM
+- `hono` is a peer dependency: `>=4.13.0 <5`
 
 ## Feature Checklist
 
@@ -26,6 +27,28 @@ Honova provides a module system, decorators, dependency injection, route metadat
 - [x] Global middleware registration
 - [x] Controller-level and route-level middleware via `@UseMiddleware`
 - [x] Built-in `not_found` and `internal_error` JSON responses
+
+### Request Pipeline (0.1.0)
+
+- [x] `HttpException` hierarchy + `ValidationException`
+- [x] Exception filters: `@Catch()`, `@UseFilters()`, global filters
+- [x] Guards: `CanActivate`, `@UseGuards()`, global guards
+- [x] Interceptors without RxJS (async onion), `@UseInterceptors()`, global interceptors
+- [x] `ExecutionContext` (class/handler/Hono context/env/`waitUntil`)
+- [x] Metadata API: `createDecorator<T>()` + `Reflector`
+- [x] Validation via Standard Schema v1 (`@Validate`, `getInput`) — zod/valibot/arktype, zero deps
+- [x] Response serialization (plain values → JSON/text/204) + `@HttpCode` / `@Header`
+- [x] Custom providers (`useValue`/`useFactory`/`useClass`/`useExisting`), async factories
+- [x] Async `onModuleInit` (awaited by the request pipeline, single-flight per isolate)
+- [x] Scope bubbling (request scope propagates to consumers, as in Nest)
+- [x] Stage-3 DI: `@Inject` on fields/accessors + `static inject = [...]`
+- [x] Env config validation (`config: { schema }` → `CONFIG` token)
+- [x] JWT guard (`createJwtGuard`) + `@Roles` / `RolesGuard`
+- [x] `@Cron` → Cloudflare Cron Triggers dispatcher (`createScheduledDispatcher`)
+- [x] Standalone context (`createApplicationContext`) for `scheduled()`/`queue()`
+- [x] Testing module (`createTestingModule`, `overrideProvider`, `flushWaitUntil`)
+- [x] HTTP `QUERY` verb (`@HttpQuery`) and `methodNotAllowed` option
+- [x] `@Public()` / `isPublicHandler()` — opt a route out of a global guard
 
 ### Security and Observability
 
@@ -64,14 +87,14 @@ Honova provides a module system, decorators, dependency injection, route metadat
 ### Planned / Missing Features
 
 - [x] Request-scoped and transient instance caching semantics validated by tests
-- [ ] Async `onModuleInit` support in runtime
-- [ ] Validation pipes and DTO validation layer
-- [ ] Guard/interceptor abstraction (Nest-style)
-- [ ] Exception filter abstraction
+- [x] Async `onModuleInit` support in runtime
+- [x] Validation pipes and DTO validation layer
+- [x] Guard/interceptor abstraction (Nest-style)
+- [x] Exception filter abstraction
 - [ ] First-class OpenAPI/Swagger generation
 - [ ] CLI scaffolding (`create-honova-app`, generators)
 - [ ] Official Cloudflare starter templates (D1, KV, R2 examples)
-- [ ] More auth primitives (JWT helper, role/permission guard, session middleware)
+- [x] More auth primitives (JWT helper, role/permission guard, session middleware)
 - [ ] E2E test suite with Worker runtime integration
 - [ ] Benchmark/performance suite and guidance
 - [ ] Complete API docs website
@@ -180,7 +203,9 @@ Current runtime behavior:
 - It runs when the provider is resolved for the first time.
 - For singleton providers, it runs once per app instance.
 - Request context is passed when the provider is resolved during a request.
-- It must be synchronous in `0.0.1`.
+- It may be async: the request pipeline awaits it (single-flight per isolate).
+  Synchronous resolution paths (`container.resolve`, `inject()`) still require
+  sync inits and throw otherwise.
 
 ## Middleware
 
@@ -251,6 +276,52 @@ class MeController {
   }
 }
 ```
+
+### Opting a route out of a global guard
+
+An application that puts authentication in a global guard has made it the
+default, which is the point: a new route cannot ship unprotected because
+somebody forgot a decorator. The few routes that must stay open then need a way
+to say so.
+
+`@Public()` marks the handler. It does **not** make the router skip guards,
+because only a guard knows whether "public" applies to it: a session guard
+should stand down on a login form, and a CSRF guard should not. Each guard opts
+in by asking.
+
+```ts
+import { Controller, Get, Public, createApp, isPublicHandler } from "honovajs";
+import type { CanActivate, ExecutionContext } from "honovajs";
+
+const session: CanActivate = {
+  canActivate(ctx: ExecutionContext) {
+    if (isPublicHandler(ctx.getHandler())) return true;
+
+    return Boolean(ctx.getContext().req.header("cookie"));
+  },
+};
+
+createApp({ guards: [session] });
+
+@Controller("/")
+class Routes {
+  @Get("/me")
+  me() {
+    return { id: "u_1" };
+  }
+
+  @Get("/health")
+  @Public()
+  health() {
+    return { ok: true };
+  }
+}
+```
+
+The mark is keyed on the handler function, not on a route path, so a handler
+cannot be moved, renamed or copied into another controller and quietly lose, or
+quietly keep, its exemption. It works written above or below the HTTP method
+decorator.
 
 ### API Key
 
@@ -364,3 +435,84 @@ npm run build
 ## License
 
 MIT
+
+## The 0.1.0 Pipeline in One Example
+
+```ts
+import {
+  Controller, Get, Post, Module, Injectable, Inject, createApp,
+  UseGuards, UseInterceptors, Validate, getInput, HttpCode,
+  createJwtGuard, Roles, RolesGuard, NotFoundException,
+  type CanActivate, type HonovaInterceptor, type ExecutionContext,
+  CONFIG, createScheduledDispatcher, Cron,
+} from "honovajs";
+
+// Any Standard Schema library works; zod >= 3.24 shown here.
+import { z } from "zod";
+
+const CreateLink = z.object({ url: z.string().url(), code: z.string().min(3) });
+
+class TimingInterceptor implements HonovaInterceptor {
+  async intercept(ctx: ExecutionContext, next: () => Promise<unknown>) {
+    const start = Date.now();
+    const result = await next();               // handler return value, not a Response
+    console.log(`${ctx.getContext().req.path} took ${Date.now() - start}ms`);
+    return result;                             // may reshape: { data: result }
+  }
+}
+
+@Injectable()
+class LinkService {
+  async find(code: string) {
+    if (code === "missing") throw new NotFoundException("Unknown link");
+    return { code, url: "https://example.com" };
+  }
+
+  @Cron("*/20 * * * *")                        // matches wrangler triggers.crons
+  async expireOutdated() { /* ... */ }
+}
+
+@Controller("/links")
+@UseGuards(createJwtGuard({ secretFromEnv: "JWT_SIGNING_KEY" }), RolesGuard)
+@UseInterceptors(TimingInterceptor)
+class LinkController {
+  constructor(private readonly linkService: LinkService) {}
+
+  @Get("/:code")
+  get(c: any) {
+    return this.linkService.find(c.req.param("code")); // plain object → JSON
+  }
+
+  @Post("/")
+  @Roles(["admin"])
+  @HttpCode(201)
+  @Validate({ body: CreateLink })
+  create(c: any) {
+    const { body } = getInput<{ body: z.infer<typeof CreateLink> }>(c);
+    return body;                                       // 201 JSON
+  }
+}
+
+@Module({ controllers: [LinkController], providers: [LinkService] })
+class AppModule {}
+
+const app = createApp({ security: { cors: true } });
+app.registerModule(AppModule);
+
+export default {
+  fetch: app.fetch,
+  scheduled: createScheduledDispatcher(app),
+};
+```
+
+## Testing
+
+```ts
+import { createTestingModule } from "honovajs";
+
+const testApp = createTestingModule({ controllers: [LinkController], providers: [LinkService] })
+  .overrideProvider(LinkService).useValue({ find: async () => ({ code: "x", url: "y" }) })
+  .compile();
+
+const res = await testApp.request("/links/x", {}, { JWT_SIGNING_KEY: "test" });
+```
