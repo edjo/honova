@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import { createLazyClientProxy } from "./lazy-proxy";
+import { createLazyClientProxy } from "./lazy-proxy.js";
 
 export type DbLifecycleStrategy = "request" | "manual";
 

@@ -5,7 +5,7 @@ import type {
   DatabaseConnectionDefinitions,
   InferDbConnectionsFromDatabase,
   InferDbDefaultAndConnections,
-} from "./manager";
+} from "./manager.js";
 
 export type DatabaseContext<
   TDefault = unknown,
@@ -96,6 +96,6 @@ export type {
   InferDbConnectionsFromDatabase,
   InferDbDefaultAndConnections,
   InferDbDefaultClient,
-} from "./manager";
+} from "./manager.js";
 
-export { defineDatabase, DatabaseManager } from "./manager";
+export { defineDatabase, DatabaseManager } from "./manager.js";

@@ -4,7 +4,7 @@ import type {
   ModuleMetadata,
   RouteDefinition,
   Constructor,
-} from "./types";
+} from "./types.js";
 
 const moduleMetadata = new WeakMap<Function, ModuleMetadata>();
 const controllerMetadata = new WeakMap<Function, ControllerMetadata>();

@@ -1,4 +1,4 @@
-import type { Constructor } from "./types";
+import type { Constructor } from "./types.js";
 
 /**
  * Constructor parameter TYPES, for dependency resolution.

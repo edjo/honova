@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — 2026-08-25
+## 0.1.0 — 2026-09-07
 
 The "Nest pipeline for Workers" release: guards, interceptors, exception
 filters, schema validation, custom providers, async lifecycle, testing module,
@@ -76,6 +76,30 @@ JWT auth, and Cron Trigger dispatch — with zero new runtime dependencies.
   `flushWaitUntil()`.
 - **HTTP QUERY verb** (`@HttpQuery`, RFC 10008, hono >= 4.13) and
   `methodNotAllowed: true` option (405 + `Allow` via hono middleware).
+- **`@Public()` and `isPublicHandler()`** — a marker for the handful of routes
+  that must stay reachable when an application makes authentication the default
+  through global guards: a health check, a login form, an OAuth metadata
+  document a client reads before it holds any credential.
+
+  It marks intent and **does not** make the router skip guards, because only a
+  guard knows whether "public" applies to it. A session guard should stand down
+  on a login form; a CSRF guard should not. Each guard opts in:
+
+  ```ts
+  async canActivate(ctx: ExecutionContext) {
+    if (isPublicHandler(ctx.getHandler())) return true;
+    // ...
+  }
+  ```
+
+  Keyed on the handler FUNCTION rather than on a route path, so a handler cannot
+  be moved, renamed or copied into another controller and quietly lose, or
+  quietly keep, its exemption. Works above or below the HTTP method decorator.
+
+  In the framework because every application that puts authentication in a
+  global guard reinvents it, each with its own `WeakSet` and its own spelling:
+  the second application gets it subtly different, and a guard shipped in a
+  shared package cannot honour a marker it has no way to import.
 - Route-registration failures (hono 4.13 `UnsupportedPathError`) are reported
   with the controller and route named.
 
@@ -115,6 +139,21 @@ adversarial verification confirmed and led to these fixes:
   `redactHeaders` extend the defaults instead of replacing them; binary and
   stream handler results bypass JSON serialization; `ClassProvider` accepts a
   `scope` override.
+
+### Packaging
+
+- **The published package can be imported by Node.** Every relative import in
+  `dist` was emitted without a file extension, which Node's ESM loader rejects:
+  `import("honovajs")` failed with `Cannot find module .../dist/core/application`.
+  Bundlers papered over it, so `wrangler dev`, `vitest` and every consumer going
+  through esbuild or Vite worked, and nothing on the way to a release exercised
+  the other path.
+
+  The source writes `./x.js` and `./x/index.js` explicitly, which
+  `moduleResolution: "Bundler"` accepts and Node needs. No behaviour changed;
+  125 import specifiers across 42 files did. A plain
+  `node -e "import('./dist/index.js')"` is now part of what "ready to publish"
+  means here.
 
 ### Known divergences (documented, intentional)
 

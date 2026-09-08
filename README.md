@@ -48,6 +48,7 @@ Honova provides a module system, decorators, dependency injection, route metadat
 - [x] Standalone context (`createApplicationContext`) for `scheduled()`/`queue()`
 - [x] Testing module (`createTestingModule`, `overrideProvider`, `flushWaitUntil`)
 - [x] HTTP `QUERY` verb (`@HttpQuery`) and `methodNotAllowed` option
+- [x] `@Public()` / `isPublicHandler()` — opt a route out of a global guard
 
 ### Security and Observability
 
@@ -275,6 +276,52 @@ class MeController {
   }
 }
 ```
+
+### Opting a route out of a global guard
+
+An application that puts authentication in a global guard has made it the
+default, which is the point: a new route cannot ship unprotected because
+somebody forgot a decorator. The few routes that must stay open then need a way
+to say so.
+
+`@Public()` marks the handler. It does **not** make the router skip guards,
+because only a guard knows whether "public" applies to it: a session guard
+should stand down on a login form, and a CSRF guard should not. Each guard opts
+in by asking.
+
+```ts
+import { Controller, Get, Public, createApp, isPublicHandler } from "honovajs";
+import type { CanActivate, ExecutionContext } from "honovajs";
+
+const session: CanActivate = {
+  canActivate(ctx: ExecutionContext) {
+    if (isPublicHandler(ctx.getHandler())) return true;
+
+    return Boolean(ctx.getContext().req.header("cookie"));
+  },
+};
+
+createApp({ guards: [session] });
+
+@Controller("/")
+class Routes {
+  @Get("/me")
+  me() {
+    return { id: "u_1" };
+  }
+
+  @Get("/health")
+  @Public()
+  health() {
+    return { ok: true };
+  }
+}
+```
+
+The mark is keyed on the handler function, not on a route path, so a handler
+cannot be moved, renamed or copied into another controller and quietly lose, or
+quietly keep, its exemption. It works written above or below the HTTP method
+decorator.
 
 ### API Key
 

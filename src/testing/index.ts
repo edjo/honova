@@ -1,7 +1,7 @@
-import { Application, type ApplicationOptions } from "../core/application";
-import { Container } from "../core/container/container";
-import { setModuleMetadata } from "../core/metadata";
-import type { Constructor, ModuleMetadata, Token } from "../core/types";
+import { Application, type ApplicationOptions } from "../core/application.js";
+import { Container } from "../core/container/container.js";
+import { setModuleMetadata } from "../core/metadata.js";
+import type { Constructor, ModuleMetadata, Token } from "../core/types.js";
 
 /**
  * Nest's Test.createTestingModule, sized for Workers: "e2e" needs no server —

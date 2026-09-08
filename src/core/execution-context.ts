@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import type { Constructor } from "./types";
+import type { Constructor } from "./types.js";
 
 /**
  * The argument every guard, interceptor, and exception filter receives.

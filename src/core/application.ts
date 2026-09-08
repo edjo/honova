@@ -3,15 +3,15 @@ import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { methodNotAllowed } from "hono/method-not-allowed";
 
-import { Container } from "./container/container";
-import { createDbManagerMiddleware, type DbManagerMiddlewareOptions } from "../database/middleware";
-import { Router, type GlobalPipeline } from "./router/router";
-import type { Constructor, ProviderDefinition, Token } from "./types";
-import { getInjectableMetadata, getModuleMetadata } from "./metadata";
-import type { GuardRef } from "./pipeline/guards";
-import type { InterceptorRef } from "./pipeline/interceptors";
-import type { FilterRef } from "./pipeline/filters-binding";
-import { isStandardSchema, type StandardSchemaV1 } from "./validation/standard-schema";
+import { Container } from "./container/container.js";
+import { createDbManagerMiddleware, type DbManagerMiddlewareOptions } from "../database/middleware.js";
+import { Router, type GlobalPipeline } from "./router/router.js";
+import type { Constructor, ProviderDefinition, Token } from "./types.js";
+import { getInjectableMetadata, getModuleMetadata } from "./metadata.js";
+import type { GuardRef } from "./pipeline/guards.js";
+import type { InterceptorRef } from "./pipeline/interceptors.js";
+import type { FilterRef } from "./pipeline/filters-binding.js";
+import { isStandardSchema, type StandardSchemaV1 } from "./validation/standard-schema.js";
 
 export interface SecurityOptions {
   /**

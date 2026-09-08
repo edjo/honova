@@ -1,5 +1,5 @@
-import type { Constructor } from "../types";
-import { Container } from "./container";
+import type { Constructor } from "../types.js";
+import { Container } from "./container.js";
 
 /**
  * Resolves from the active container — the one belonging to the most recently

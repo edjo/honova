@@ -1,5 +1,5 @@
-import { getConstructorParamTypes } from "../design-types";
-import { getInjectableMetadata, getInjectionTokens } from "../metadata";
+import { getConstructorParamTypes } from "../design-types.js";
+import { getInjectableMetadata, getInjectionTokens } from "../metadata.js";
 import type {
   Constructor,
   CustomProvider,
@@ -7,7 +7,7 @@ import type {
   OnModuleInit,
   ProviderDefinition,
   Token,
-} from "../types";
+} from "../types.js";
 
 interface ContainerConfig {
   strict: boolean;

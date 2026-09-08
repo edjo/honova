@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 
-import type { HttpMethod } from "../types";
-import { setMethodRouteMetadata } from "../metadata";
+import type { HttpMethod } from "../types.js";
+import { setMethodRouteMetadata } from "../metadata.js";
 
 function isStandardMethodDecoratorArgs(args: unknown[]): boolean {
   if (args.length !== 2) {

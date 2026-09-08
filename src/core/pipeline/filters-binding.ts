@@ -1,5 +1,5 @@
-import type { Constructor } from "../types";
-import type { ExceptionFilter } from "../exceptions/filters";
+import type { Constructor } from "../types.js";
+import type { ExceptionFilter } from "../exceptions/filters.js";
 
 export type FilterRef = Constructor<ExceptionFilter> | ExceptionFilter;
 

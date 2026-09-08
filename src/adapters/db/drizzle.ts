@@ -1,4 +1,4 @@
-import type { DatabaseAdapter } from "../../database/manager";
+import type { DatabaseAdapter } from "../../database/manager.js";
 
 export interface DrizzleAdapterOptions<TClient> {
   connect: (url: string) => Promise<TClient> | TClient;

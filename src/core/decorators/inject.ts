@@ -1,6 +1,6 @@
-import type { Constructor } from "../types";
-import { setInjectionToken } from "../metadata";
-import { Container } from "../container/container";
+import type { Constructor } from "../types.js";
+import { setInjectionToken } from "../metadata.js";
+import { Container } from "../container/container.js";
 
 type InjectToken = Constructor | string | symbol;
 

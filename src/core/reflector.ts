@@ -1,4 +1,4 @@
-import type { Constructor } from "./types";
+import type { Constructor } from "./types.js";
 
 /**
  * Custom metadata for classes and route handlers, mirroring Nest's

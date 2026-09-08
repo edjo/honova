@@ -1,6 +1,6 @@
-import { Container } from "./container/container";
-import { getInjectableMetadata, getModuleMetadata } from "./metadata";
-import type { Constructor, ProviderDefinition } from "./types";
+import { Container } from "./container/container.js";
+import { getInjectableMetadata, getModuleMetadata } from "./metadata.js";
+import type { Constructor, ProviderDefinition } from "./types.js";
 
 export interface ApplicationContext {
   container: Container;

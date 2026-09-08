@@ -6,7 +6,7 @@ import {
   type DatabaseConnectionDefinitions,
   type InferDbConnectionsFromDatabase,
   type InferDbDefaultAndConnections,
-} from "./manager";
+} from "./manager.js";
 
 export type DbManagerMiddlewareOptions<
   Env extends Record<string, unknown>,

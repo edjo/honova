@@ -1,5 +1,5 @@
-import type { InjectableMetadata } from "../types";
-import { setInjectableMetadata } from "../metadata";
+import type { InjectableMetadata } from "../types.js";
+import { setInjectableMetadata } from "../metadata.js";
 
 export interface InjectableOptions {
   scope?: "singleton" | "request" | "transient";

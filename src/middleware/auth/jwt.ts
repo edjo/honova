@@ -1,14 +1,14 @@
 import { verify } from "hono/jwt";
 import type { SignatureAlgorithm } from "hono/utils/jwt/jwa";
 
-import type { CanActivate } from "../../core/pipeline/guards";
-import type { ExecutionContext } from "../../core/execution-context";
+import type { CanActivate } from "../../core/pipeline/guards.js";
+import type { ExecutionContext } from "../../core/execution-context.js";
 import {
   ForbiddenException,
   InternalServerErrorException,
   UnauthorizedException,
-} from "../../core/exceptions/http-exception";
-import { createDecorator, reflector } from "../../core/reflector";
+} from "../../core/exceptions/http-exception.js";
+import { createDecorator, reflector } from "../../core/reflector.js";
 
 export interface JwtGuardOptions<Env extends Record<string, unknown> = Record<string, unknown>> {
   /** Static secret. Prefer secretFromEnv on Workers (secrets are bindings). */

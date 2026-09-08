@@ -1,8 +1,8 @@
 import type { Context } from "hono";
 
-import type { Constructor } from "../types";
-import type { ExecutionContext } from "../execution-context";
-import { HttpException } from "./http-exception";
+import type { Constructor } from "../types.js";
+import type { ExecutionContext } from "../execution-context.js";
+import { HttpException } from "./http-exception.js";
 
 /**
  * Nest-style exception filter, HTTP-only.

@@ -1,5 +1,5 @@
-import type { Constructor } from "../types";
-import type { ExecutionContext } from "../execution-context";
+import type { Constructor } from "../types.js";
+import type { ExecutionContext } from "../execution-context.js";
 
 /**
  * RxJS-free interceptor: an async onion around the handler.

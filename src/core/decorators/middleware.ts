@@ -5,7 +5,7 @@ import {
   prependMethodRouteMiddlewares,
   prependRouteMiddlewares,
   setControllerMetadata,
-} from "../metadata";
+} from "../metadata.js";
 
 function applyControllerMiddlewares(target: Function, middlewares: MiddlewareHandler[]): void {
   const existing = getControllerMetadata(target);

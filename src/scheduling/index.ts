@@ -1,6 +1,6 @@
-import type { Constructor } from "../core/types";
-import type { Application } from "../core/application";
-import type { ApplicationContext } from "../core/standalone";
+import type { Constructor } from "../core/types.js";
+import type { Application } from "../core/application.js";
+import type { ApplicationContext } from "../core/standalone.js";
 
 /**
  * @Cron compiles to Cloudflare Cron Triggers, not to in-process timers —

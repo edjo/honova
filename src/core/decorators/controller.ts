@@ -1,4 +1,4 @@
-import type { ControllerMetadata } from "../types";
+import type { ControllerMetadata } from "../types.js";
 import {
   getControllerMetadata,
   getInjectableMetadata,
@@ -6,7 +6,7 @@ import {
   setControllerMetadata,
   setInjectableMetadata,
   setRoutesMetadata,
-} from "../metadata";
+} from "../metadata.js";
 
 function collectRoutesFromPrototype(target: Function): void {
   const rootPrototype = target.prototype as object | undefined;

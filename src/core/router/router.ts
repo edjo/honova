@@ -1,35 +1,35 @@
 import type { MiddlewareHandler } from "hono";
 import { Hono, type Context } from "hono";
 
-import { Container } from "../container/container";
-import type { Constructor, HttpMethod } from "../types";
-import { getControllerMetadata, getRoutesMetadata } from "../metadata";
-import { ExecutionContext } from "../execution-context";
-import { ForbiddenException } from "../exceptions/http-exception";
+import { Container } from "../container/container.js";
+import type { Constructor, HttpMethod } from "../types.js";
+import { getControllerMetadata, getRoutesMetadata } from "../metadata.js";
+import { ExecutionContext } from "../execution-context.js";
+import { ForbiddenException } from "../exceptions/http-exception.js";
 import {
   defaultExceptionResponse,
   filterMatches,
   type ExceptionFilter,
-} from "../exceptions/filters";
+} from "../exceptions/filters.js";
 import {
   getClassGuards,
   getMethodGuards,
   type CanActivate,
   type GuardRef,
-} from "../pipeline/guards";
+} from "../pipeline/guards.js";
 import {
   getClassInterceptors,
   getMethodInterceptors,
   type HonovaInterceptor,
   type InterceptorRef,
-} from "../pipeline/interceptors";
+} from "../pipeline/interceptors.js";
 import {
   getClassFilters,
   getMethodFilters,
   type FilterRef,
-} from "../pipeline/filters-binding";
-import { getValidateSchemas, runValidation } from "../validation/validate";
-import { getResponseExtras } from "../decorators/http-response";
+} from "../pipeline/filters-binding.js";
+import { getValidateSchemas, runValidation } from "../validation/validate.js";
+import { getResponseExtras } from "../decorators/http-response.js";
 
 export interface GlobalPipeline {
   guards: GuardRef[];

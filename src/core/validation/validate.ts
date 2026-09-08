@@ -1,12 +1,12 @@
 import type { Context } from "hono";
 
-import { ValidationException, type ValidationIssue } from "../exceptions/http-exception";
+import { ValidationException, type ValidationIssue } from "../exceptions/http-exception.js";
 import {
   isStandardSchema,
   type InferOutput,
   type StandardIssue,
   type StandardSchemaV1,
-} from "./standard-schema";
+} from "./standard-schema.js";
 
 export interface ValidateSchemas {
   body?: StandardSchemaV1;
